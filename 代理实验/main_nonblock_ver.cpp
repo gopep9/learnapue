@@ -78,33 +78,50 @@ void *proxyThread(void *arg)
     write(remoteSock,line1,strlen(line1));
     write(remoteSock,buf,readwordnum);
     
-    int tmpflag=fcntl(connectSock, F_GETFL);
-    tmpflag|=O_NONBLOCK;
-    int ret=fcntl(connectSock, F_SETFL,tmpflag);
-    tmpflag=fcntl(remoteSock, F_GETFL);
-    ret=fcntl(remoteSock, F_SETFL,tmpflag);
+    //    int tmpflag=fcntl(connectSock, F_GETFL);
+    //    tmpflag|=O_NONBLOCK;
+    //    int ret=fcntl(connectSock, F_SETFL,tmpflag);
+    //    tmpflag=fcntl(remoteSock, F_GETFL);
+    //    ret=fcntl(remoteSock, F_SETFL,tmpflag);
     //设置为非阻塞
     
     while(true)
     {
         int error=0;
         socklen_t len=sizeof(error);
-        int code=getsockopt(connectSock, SOL_SOCKET, SO_ERROR, &error, &len);
-        if(code<0||error)
+        //        int code=getsockopt(connectSock, SOL_SOCKET, SO_ERROR, &error, &len);
+        //        if(code<0||error)
+        //        {
+        //            break;
+        //        }
+        readwordnum=recv(connectSock,buf,sizeof(buf),MSG_DONTWAIT);
+        //假如返回值>0正常，-1和errno为11也是正常
+        if(readwordnum>0){
+            write(remoteSock, buf, sizeof(buf));
+        }else if((readwordnum==-1)&&(errno==EWOULDBLOCK))
         {
+            //            正常
+        }
+        else{
             break;
         }
-        readwordnum=read(connectSock,buf,sizeof(buf));
-        write(remoteSock, buf, sizeof(buf));
         error=0;
         len=sizeof(error);
-        code=getsockopt(remoteSock, SOL_SOCKET, SO_ERROR, &error, &len);
-        if(code<0||error)
+        //        code=getsockopt(remoteSock, SOL_SOCKET, SO_ERROR, &error, &len);
+        //        if(code<0||error)
+        //        {
+        //            break;
+        //        }
+        readwordnum=recv(remoteSock,buf,sizeof(buf),MSG_DONTWAIT);
+        if(readwordnum>0){
+            write(connectSock, buf, sizeof(buf));
+        }else if((readwordnum==-1)&&(errno==EWOULDBLOCK))
         {
+            //            正常
+        }
+        else{
             break;
         }
-        readwordnum=read(remoteSock,buf,sizeof(buf));
-        write(connectSock, buf, sizeof(buf));
     }
     
     close(remoteSock);
