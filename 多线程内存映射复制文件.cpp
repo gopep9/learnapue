@@ -82,21 +82,9 @@ int main(int argc,char *argv[])
         close(fd2);
         return 0;
     }
-    //撑大目标文件
-    if(lseek(fd2, sbuff.st_size-1,SEEK_SET )==-1)
-    {
-        perror("lseek");
-        return -1;
-    }
     
-    if(write(fd2," ",1) != 1) //必须写一个空格占用新文件 不然新文件撑大不了
-        perror("write error");
-    
-    if(lseek(fd2,0,SEEK_SET )==-1)
-    {
-        perror("lseek");
-        return -1;
-    }
+    ftruncate(fd2, sbuff.st_size);
+
     //映射的间隔必须是虚拟内存地址的倍数
     BLOCK=sysconf(_SC_PAGESIZE);
     
