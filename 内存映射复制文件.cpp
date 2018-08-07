@@ -33,16 +33,12 @@ int main(int argc,char *argv[])
     }
     struct stat sbuff={};
     stat(argv[1],&sbuff);
-    
-    //撑大目标文件
-    if(lseek(fd2, sbuff.st_size-1,SEEK_SET )==-1)
+    if(sbuff.st_size==0)
     {
-        perror("lseek");
-        return -1;
+        return 0;
     }
     
-    if(write(fd2," ",1) != 1) //必须写一个空格占用新文件 不然新文件撑大不了
-        perror("write error");
+    ftruncate(fd2, sbuff.st_size);
     
     void *share=mmap(NULL,sbuff.st_size,PROT_READ,MAP_PRIVATE,fd,0);
     if(share==MAP_FAILED)
