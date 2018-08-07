@@ -99,7 +99,7 @@ int main(int argc,char *argv[])
         pthread_mutex_unlock(&mutex);
         //    只能使用内存映射读取文件了
         ssize_t mmapSize=0;
-        if(startPost>fileSize)
+        if(startPost>=fileSize)
         {
             break;
         }
